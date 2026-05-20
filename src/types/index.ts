@@ -1,12 +1,12 @@
 import 'express-session';
 
-// ── Enums ───────────────────────────────────────────────────────────────────
+// Application Enums
 export type UserRole = 'ADMIN' | 'STAFF' | 'CUSTOMER';
 export type ParcelStatus = 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
 export type RouteStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
 export type VehicleType = 'MOTORCYCLE' | 'VAN' | 'TRUCK';
 
-// ── Session ──────────────────────────────────────────────────────────────────
+// Session Configuration
 export interface SessionUser {
   id: number;
   firstName: string;
@@ -23,7 +23,7 @@ declare module 'express-session' {
   }
 }
 
-// ── DTOs ─────────────────────────────────────────────────────────────────────
+// Data Transfer Objects (DTOs)
 export interface CreateUserDto {
   firstName: string;
   lastName: string;

@@ -2,28 +2,28 @@ import prisma from './config/prisma.config.js';
 import env from './config/env.config.js';
 import app from './app.js';
 
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
+// Bootstrap
 async function bootstrap(): Promise<void> {
-  // 1. Connect to database
+  // Connect to database
   try {
     await prisma.$connect();
-    console.log('✅ Database connected.');
+    console.log('Database connected.');
   } catch (err) {
-    console.error('❌ Database connection failed:', err);
+    console.error('Database connection failed:', err);
     process.exit(1);
   }
 
-  // 2. Start HTTP server
+  // Start HTTP server
   const server = app.listen(env.PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${env.PORT} [${env.NODE_ENV}]`);
+    console.log(`Server running on http://localhost:${env.PORT} [${env.NODE_ENV}]`);
   });
 
   server.on('error', (err: Error) => {
-    console.error('❌ Fatal server error:', err.message);
+    console.error('Fatal server error:', err.message);
     process.exit(1);
   });
 
-  // 3. Graceful shutdown
+  // Graceful shutdown
   const shutdown = async (signal: string): Promise<void> => {
     console.log(`\n⚡ ${signal} received. Shutting down...`);
     server.close(async () => {

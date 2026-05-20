@@ -11,7 +11,7 @@ describe('nearestNeighborRoute optimization algorithm', () => {
   });
 
   it('should optimize a list of points starting from the first point using nearest neighbor', () => {
-    // Kathmandu locations simulating delivery points
+    // Thamel is start hub, Lazimpat is close (~0.8km), Bhaktapur is far (~11km)
     const points: DeliveryPoint[] = [
       { id: 1, name: 'Starting Hub (Thamel)', lat: 27.7172, lng: 85.3240 },
       { id: 2, name: 'Far Point (Bhaktapur)', lat: 27.6710, lng: 85.4298 },
@@ -20,11 +20,10 @@ describe('nearestNeighborRoute optimization algorithm', () => {
 
     const result = nearestNeighborRoute(points);
 
-    // Starting point must be the first element
+    // Starts at first point
     expect(result.ordered[0]!.id).toBe(1);
 
-    // Lazimpat is much closer to Thamel (~0.8km) than Bhaktapur (~11km).
-    // So the nearest neighbor algorithm should visit Lazimpat (id 3) first, then Bhaktapur (id 2).
+    // Closest point (Lazimpat) must be visited first before Bhaktapur
     expect(result.ordered[1]!.id).toBe(3);
     expect(result.ordered[2]!.id).toBe(2);
 
@@ -33,7 +32,7 @@ describe('nearestNeighborRoute optimization algorithm', () => {
   });
 
   it('should calculate accurate distances based on Haversine', () => {
-    // Distance from Kathmandu (27.7172, 85.3240) to Pokhara (28.2096, 83.9856) is ~146 km
+    // KTM to Pokhara is ~146 km
     const points: DeliveryPoint[] = [
       { id: 1, name: 'Kathmandu', lat: 27.7172, lng: 85.3240 },
       { id: 2, name: 'Pokhara', lat: 28.2096, lng: 83.9856 },

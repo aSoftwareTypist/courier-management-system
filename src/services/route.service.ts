@@ -2,7 +2,7 @@ import { routeRepository } from '../repositories/route.repository.js';
 import CustomError from '../utils/CustomError.js';
 import type { CreateRouteDto, DeliveryPoint } from '../types/index.js';
 
-// ── Haversine Formula ─────────────────────────────────────────────────────────
+// Calculates the straight-line distance between two GPS coordinates
 const haversineDistanceKm = (
   lat1: number,
   lng1: number,
@@ -20,7 +20,7 @@ const haversineDistanceKm = (
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-// ── Nearest Neighbour TSP ─────────────────────────────────────────────────────
+// Finds the most efficient delivery path using the Nearest Neighbor algorithm
 export const nearestNeighborRoute = (
   points: DeliveryPoint[],
 ): {
@@ -53,12 +53,13 @@ export const nearestNeighborRoute = (
     ordered.push(unvisited.splice(nearestIdx, 1)[0]!);
   }
 
-  const estimatedTimeMin = Math.round((totalDistanceKm / 60) * 60); // 60 km/h avg
+  // Assuming an average speed of 60 km/h
+  const estimatedTimeMin = Math.round((totalDistanceKm / 60) * 60);
 
   return { ordered, totalDistanceKm, estimatedTimeMin };
 };
 
-// ── Service ───────────────────────────────────────────────────────────────────
+// Main route management service
 export const routeService = {
   getAll: () => routeRepository.findAll(),
 
