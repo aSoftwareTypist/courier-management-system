@@ -1,0 +1,65 @@
+<% const navLinks = [
+  { href: '/dashboard',  icon: '📊', label: 'Dashboard',       section: 'main' },
+  { href: '/parcels',    icon: '📦', label: 'Parcels',         section: 'main' },
+  { href: '/tracking',   icon: '🔍', label: 'Track Parcel',    section: 'main' },
+  { href: '/branches',   icon: '🏢', label: 'Branches',        section: 'manage' },
+  { href: '/routes',     icon: '🗺️', label: 'Routes',          section: 'manage' },
+  { href: '/users',      icon: '👥', label: 'Users',           section: 'admin', adminOnly: true },
+  { href: '/settings',   icon: '⚙️', label: 'Settings',        section: 'admin', adminOnly: true },
+]; %>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">📮</div>
+    <div>
+      <div class="brand-name">Courier CMS</div>
+      <div class="brand-sub">Management System</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <% navLinks.filter(l => l.section === 'main').forEach(link => { %>
+      <a href="<%= link.href %>"
+         class="nav-link <%= typeof activePage !== 'undefined' && activePage === link.href ? 'active' : '' %>">
+        <span class="icon"><%= link.icon %></span>
+        <span><%= link.label %></span>
+      </a>
+    <% }); %>
+
+    <div class="nav-section-label" style="margin-top:0.75rem;">Manage</div>
+    <% navLinks.filter(l => l.section === 'manage').forEach(link => { %>
+      <a href="<%= link.href %>"
+         class="nav-link <%= typeof activePage !== 'undefined' && activePage === link.href ? 'active' : '' %>">
+        <span class="icon"><%= link.icon %></span>
+        <span><%= link.label %></span>
+      </a>
+    <% }); %>
+
+    <% if (currentUser && currentUser.role === 'ADMIN') { %>
+      <div class="nav-section-label" style="margin-top:0.75rem;">Admin</div>
+      <% navLinks.filter(l => l.section === 'admin').forEach(link => { %>
+        <a href="<%= link.href %>"
+           class="nav-link <%= typeof activePage !== 'undefined' && activePage === link.href ? 'active' : '' %>">
+          <span class="icon"><%= link.icon %></span>
+          <span><%= link.label %></span>
+        </a>
+      <% }); %>
+    <% } %>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">
+        <%= currentUser ? currentUser.firstName[0] + currentUser.lastName[0] : 'U' %>
+      </div>
+      <div class="user-info">
+        <div class="name"><%= currentUser ? currentUser.firstName + ' ' + currentUser.lastName : 'User' %></div>
+        <div class="role"><%= currentUser ? currentUser.role : '' %></div>
+      </div>
+      <form method="POST" action="/logout" style="margin:0;">
+        <button type="submit" class="logout-btn" title="Logout">⬅</button>
+      </form>
+    </div>
+  </div>
+</aside>

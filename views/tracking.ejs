@@ -1,0 +1,97 @@
+<%- include('partials/header', { title: title }) %>
+
+<div id="app-layout">
+  <%- include('partials/sidebar', { activePage: '/tracking' }) %>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">🔍 Track Parcel</div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Search -->
+      <div class="tracking-search-card">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;">Parcel Tracker</h2>
+        <p class="text-muted text-sm" style="margin-bottom:1.25rem;">Enter a tracking number to see real-time status.</p>
+        <form method="POST" action="/tracking">
+          <div class="flex gap-3">
+            <input type="text" name="trackingNumber"
+              value="<%= typeof parcel !== 'undefined' && parcel ? parcel.trackingNumber : '' %>"
+              placeholder="e.g. CMS-ABC123-XY9Z"
+              style="flex:1;margin-bottom:0;" required>
+            <button type="submit" class="btn btn-primary">Track</button>
+          </div>
+        </form>
+        <% if (locals.error && error) { %>
+          <div style="margin-top:1rem;padding:0.75rem 1rem;background:var(--danger-light);border-radius:var(--radius);color:#991b1b;font-size:0.875rem;">
+            ⚠️ <%= error %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Result -->
+      <% if (parcel) { %>
+      <div class="tracking-result">
+        <div class="card-header" style="background:var(--primary);color:white;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+          <div>
+            <div style="font-size:0.75rem;opacity:0.8;margin-bottom:0.25rem;">Tracking Number</div>
+            <div style="font-size:1.1rem;font-weight:800;letter-spacing:1px;"><%= parcel.trackingNumber %></div>
+          </div>
+          <span class="badge badge-<%= parcel.status.toLowerCase().replace('_','-') %>" style="font-size:0.8rem;">
+            <%= parcel.status.replace('_',' ') %>
+          </span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+          <div style="padding:1.25rem;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+            <div class="text-xs text-muted font-semibold" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Sender</div>
+            <div class="font-semibold"><%= parcel.senderName %></div>
+            <div class="text-sm text-muted"><%= parcel.senderPhone %></div>
+            <div class="text-sm text-muted mt-1"><%= parcel.senderAddress %></div>
+          </div>
+          <div style="padding:1.25rem;border-bottom:1px solid var(--border);">
+            <div class="text-xs text-muted font-semibold" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Receiver</div>
+            <div class="font-semibold"><%= parcel.receiverName %></div>
+            <div class="text-sm text-muted"><%= parcel.receiverPhone %></div>
+            <div class="text-sm text-muted mt-1"><%= parcel.receiverAddress %></div>
+          </div>
+          <div style="padding:1.25rem;border-right:1px solid var(--border);">
+            <div class="text-xs text-muted font-semibold" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Origin</div>
+            <div class="font-semibold"><%= parcel.fromBranch.city %>, <%= parcel.fromBranch.state %></div>
+            <div class="text-sm text-muted"><%= parcel.fromBranch.branchCode %></div>
+          </div>
+          <div style="padding:1.25rem;">
+            <div class="text-xs text-muted font-semibold" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Destination</div>
+            <div class="font-semibold"><%= parcel.toBranch.city %>, <%= parcel.toBranch.state %></div>
+            <div class="text-sm text-muted"><%= parcel.toBranch.branchCode %></div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div style="padding:1.25rem;border-top:1px solid var(--border);">
+          <div class="font-semibold mb-4">Tracking History</div>
+          <% if (parcel.tracks.length === 0) { %>
+            <p class="text-muted text-sm">No tracking events yet.</p>
+          <% } else { %>
+          <div class="timeline">
+            <% parcel.tracks.forEach((t, i) => { %>
+            <div class="timeline-item">
+              <div class="timeline-dot <%= t.status === 'DELIVERED' ? 'success' : t.status === 'CANCELLED' ? 'danger' : t.status === 'IN_TRANSIT' ? '' : 'warning' %>"></div>
+              <div class="timeline-date"><%= new Date(t.createdAt).toLocaleString() %></div>
+              <div class="timeline-status"><%= t.status.replace('_',' ') %></div>
+              <% if (t.location) { %><div class="timeline-note">📍 <%= t.location %></div><% } %>
+              <% if (t.note) { %><div class="timeline-note"><%= t.note %></div><% } %>
+            </div>
+            <% }); %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

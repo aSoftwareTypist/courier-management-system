@@ -1,0 +1,109 @@
+<%- include('partials/header', { title: title }) %>
+
+<div id="app-layout">
+  <%- include('partials/sidebar', { activePage: '/dashboard' }) %>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📊 Dashboard</div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">📦</div>
+          <div>
+            <div class="stat-value"><%= stats.totalParcels %></div>
+            <div class="stat-label">Total Parcels</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow">⏳</div>
+          <div>
+            <div class="stat-value"><%= stats.pending %></div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🚚</div>
+          <div>
+            <div class="stat-value"><%= stats.inTransit %></div>
+            <div class="stat-label">In Transit</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div>
+            <div class="stat-value"><%= stats.delivered %></div>
+            <div class="stat-label">Delivered</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">👥</div>
+          <div>
+            <div class="stat-value"><%= stats.totalUsers %></div>
+            <div class="stat-label">Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🏢</div>
+          <div>
+            <div class="stat-value"><%= stats.totalBranches %></div>
+            <div class="stat-label">Branches</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Parcels -->
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">Recent Parcels</span>
+          <a href="/parcels" class="btn btn-outline btn-sm">View All →</a>
+        </div>
+        <% if (recentParcels.length === 0) { %>
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <h3>No parcels yet</h3>
+            <p>Create your first parcel to get started.</p>
+          </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking #</th>
+              <th>Sender</th>
+              <th>Receiver</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentParcels.forEach(p => { %>
+            <tr>
+              <td><code style="font-size:0.75rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;"><%= p.trackingNumber %></code></td>
+              <td><%= p.senderName %></td>
+              <td><%= p.receiverName %></td>
+              <td><%= p.fromBranch.city %></td>
+              <td><%= p.toBranch.city %></td>
+              <td>
+                <span class="badge badge-<%= p.status.toLowerCase().replace('_','-') %>">
+                  <%= p.status.replace('_',' ') %>
+                </span>
+              </td>
+              <td class="text-muted text-sm"><%= new Date(p.createdAt).toLocaleDateString() %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

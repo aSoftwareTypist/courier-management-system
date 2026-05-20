@@ -1,0 +1,38 @@
+<%- include('partials/header', { title: 'Login' }) %>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">📮</div>
+      <h1>Courier CMS</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <% if (locals.flash) { %>
+      <div class="toast <%= flash.type %>" style="position:relative;animation:none;margin-bottom:1rem;min-width:unset;">
+        <span class="toast-icon"><%= flash.type === 'success' ? '✅' : '❌' %></span>
+        <span class="toast-msg"><%= flash.message %></span>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/login" id="login-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="admin@cms.com" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-full btn-lg" style="margin-top:0.5rem;">
+        Sign In →
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.25rem;font-size:0.8rem;color:var(--text-muted);">
+      Demo: <strong>admin@cms.com</strong> / <strong>password</strong>
+    </p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

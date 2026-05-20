@@ -1,0 +1,188 @@
+<%- include('partials/header', { title: title }) %>
+
+<div id="app-layout">
+  <%- include('partials/sidebar', { activePage: '/users' }) %>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">👥 Users</div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('create-user-modal')">+ New User</button>
+    </div>
+
+    <div class="page-content">
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">All Users (<%= users.length %>)</span>
+        </div>
+        <% if (users.length === 0) { %>
+          <div class="empty-state">
+            <div class="icon">👥</div>
+            <h3>No users found</h3>
+            <p>Create the first user using the button above.</p>
+          </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Branch</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+            <tr>
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="user-avatar" style="width:28px;height:28px;font-size:0.65rem;">
+                    <%= u.firstName[0] %><%= u.lastName[0] %>
+                  </div>
+                  <div class="font-medium"><%= u.firstName %> <%= u.lastName %></div>
+                </div>
+              </td>
+              <td class="text-sm text-muted"><%= u.email %></td>
+              <td><span class="badge badge-<%= u.role.toLowerCase() %>"><%= u.role %></span></td>
+              <td class="text-sm"><%= u.branch ? u.branch.branchCode + ' — ' + u.branch.city : '—' %></td>
+              <td class="text-xs text-muted"><%= new Date(u.createdAt).toLocaleDateString() %></td>
+              <td>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-sm"
+                    onclick="openEditUser(<%= JSON.stringify({id:u.id,firstName:u.firstName,lastName:u.lastName,email:u.email,role:u.role,branchId:u.branchId}) %>)">Edit</button>
+                  <form method="POST" action="/users/<%= u.id %>/delete"
+                    onsubmit="return confirm('Delete user <%= u.firstName %>?')">
+                    <button type="submit" class="btn btn-danger btn-sm">Del</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal-overlay" id="create-user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New User</span>
+      <button class="modal-close" onclick="closeModal('create-user-modal')">✕</button>
+    </div>
+    <form method="POST" action="/users">
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="firstName" required>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastName" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Email</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Password</label>
+            <input type="password" name="password" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" required>
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
+              <option value="CUSTOMER">Customer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Branch (optional)</label>
+            <select name="branchId">
+              <option value="">None</option>
+              <% branches.forEach(b => { %>
+                <option value="<%= b.id %>"><%= b.branchCode %> — <%= b.city %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('create-user-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="edit-user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Edit User</span>
+      <button class="modal-close" onclick="closeModal('edit-user-modal')">✕</button>
+    </div>
+    <form method="POST" id="edit-user-form">
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="firstName" id="eu-fname" required>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastName" id="eu-lname" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Email</label>
+            <input type="email" name="email" id="eu-email" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>New Password (leave blank to keep current)</label>
+            <input type="password" name="password" minlength="6">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" id="eu-role">
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
+              <option value="CUSTOMER">Customer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <select name="branchId" id="eu-branch">
+              <option value="">None</option>
+              <% branches.forEach(b => { %>
+                <option value="<%= b.id %>"><%= b.branchCode %> — <%= b.city %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('edit-user-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditUser(u) {
+  document.getElementById('edit-user-form').action = '/users/' + u.id + '/edit';
+  document.getElementById('eu-fname').value = u.firstName;
+  document.getElementById('eu-lname').value = u.lastName;
+  document.getElementById('eu-email').value = u.email;
+  document.getElementById('eu-role').value = u.role;
+  document.getElementById('eu-branch').value = u.branchId ?? '';
+  openModal('edit-user-modal');
+}
+</script>
+
+<%- include('partials/footer') %>

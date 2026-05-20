@@ -1,0 +1,190 @@
+<%- include('partials/header', { title: title }) %>
+
+<div id="app-layout">
+  <%- include('partials/sidebar', { activePage: '/parcels' }) %>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">📦 Parcels</div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('create-parcel-modal')">+ New Parcel</button>
+    </div>
+
+    <div class="page-content">
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">All Parcels — Page <%= page %></span>
+          <div class="flex gap-2">
+            <% if (page > 1) { %><a href="/parcels?page=<%= page-1 %>" class="btn btn-outline btn-sm">← Prev</a><% } %>
+            <% if (parcels.length === 20) { %><a href="/parcels?page=<%= page+1 %>" class="btn btn-outline btn-sm">Next →</a><% } %>
+          </div>
+        </div>
+        <% if (parcels.length === 0) { %>
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <h3>No parcels found</h3>
+            <p>Create your first parcel using the button above.</p>
+          </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Tracking #</th>
+              <th>Sender</th>
+              <th>Receiver</th>
+              <th>From → To</th>
+              <th>Weight</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% parcels.forEach(p => { %>
+            <tr>
+              <td><code style="font-size:0.72rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;"><%= p.trackingNumber %></code></td>
+              <td>
+                <div class="font-medium"><%= p.senderName %></div>
+                <div class="text-xs text-muted"><%= p.senderPhone %></div>
+              </td>
+              <td>
+                <div class="font-medium"><%= p.receiverName %></div>
+                <div class="text-xs text-muted"><%= p.receiverPhone %></div>
+              </td>
+              <td class="text-sm"><%= p.fromBranch.city %> → <%= p.toBranch.city %></td>
+              <td class="text-sm"><%= p.weight ? p.weight + ' kg' : '—' %></td>
+              <td>
+                <span class="badge badge-<%= p.status.toLowerCase().replace('_','-') %>">
+                  <%= p.status.replace('_',' ') %>
+                </span>
+              </td>
+              <td class="text-xs text-muted"><%= new Date(p.createdAt).toLocaleDateString() %></td>
+              <td>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-sm"
+                    onclick="openUpdateParcel(<%= p.id %>, '<%= p.status %>')">Update</button>
+                  <form method="POST" action="/parcels/<%= p.id %>/delete"
+                    onsubmit="return confirm('Delete this parcel?')">
+                    <button type="submit" class="btn btn-danger btn-sm">Del</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Parcel Modal -->
+<div class="modal-overlay" id="create-parcel-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Parcel</span>
+      <button class="modal-close" onclick="closeModal('create-parcel-modal')">✕</button>
+    </div>
+    <form method="POST" action="/parcels">
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label>Sender Name</label>
+            <input type="text" name="senderName" required>
+          </div>
+          <div class="form-group">
+            <label>Sender Phone</label>
+            <input type="text" name="senderPhone" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Sender Address</label>
+            <input type="text" name="senderAddress" required>
+          </div>
+          <div class="form-group">
+            <label>Receiver Name</label>
+            <input type="text" name="receiverName" required>
+          </div>
+          <div class="form-group">
+            <label>Receiver Phone</label>
+            <input type="text" name="receiverPhone" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label>Receiver Address</label>
+            <input type="text" name="receiverAddress" required>
+          </div>
+          <div class="form-group">
+            <label>Origin Branch</label>
+            <select name="fromBranchId" required>
+              <option value="">Select branch...</option>
+              <% branches.forEach(b => { %>
+                <option value="<%= b.id %>"><%= b.branchCode %> — <%= b.city %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Destination Branch</label>
+            <select name="toBranchId" required>
+              <option value="">Select branch...</option>
+              <% branches.forEach(b => { %>
+                <option value="<%= b.id %>"><%= b.branchCode %> — <%= b.city %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" name="weight" step="0.1" min="0" placeholder="Optional">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('create-parcel-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Parcel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal-overlay" id="update-parcel-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Update Parcel Status</span>
+      <button class="modal-close" onclick="closeModal('update-parcel-modal')">✕</button>
+    </div>
+    <form method="POST" id="update-parcel-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>New Status</label>
+          <select name="status" id="update-status" required>
+            <option value="PENDING">Pending</option>
+            <option value="IN_TRANSIT">In Transit</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location (optional)</label>
+          <input type="text" name="location" placeholder="e.g. Kathmandu Hub">
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <textarea name="note" placeholder="Status update note..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('update-parcel-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Status</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openUpdateParcel(id, currentStatus) {
+  document.getElementById('update-parcel-form').action = '/parcels/' + id + '/status';
+  document.getElementById('update-status').value = currentStatus;
+  openModal('update-parcel-modal');
+}
+</script>
+
+<%- include('partials/footer') %>

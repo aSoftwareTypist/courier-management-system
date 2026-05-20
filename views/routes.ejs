@@ -1,0 +1,123 @@
+<%- include('partials/header', { title: title }) %>
+
+<div id="app-layout">
+  <%- include('partials/sidebar', { activePage: '/routes' }) %>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title">🗺️ Route Optimizer</div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('create-route-modal')">+ New Route</button>
+    </div>
+
+    <div class="page-content">
+      <div class="route-grid">
+
+        <!-- Route List -->
+        <div>
+          <div class="table-wrap" style="margin-bottom:1rem;">
+            <div class="table-head"><span class="table-title">Routes (<%= routes.length %>)</span></div>
+            <% if (routes.length === 0) { %>
+              <div class="empty-state" style="padding:2rem;">
+                <div class="icon">🗺️</div>
+                <h3>No routes yet</h3>
+              </div>
+            <% } else { %>
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Vehicle</th><th>From → To</th><th>Dist.</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody>
+                <% routes.forEach(r => { %>
+                <tr>
+                  <td class="text-xs text-muted">#<%= r.id %></td>
+                  <td class="text-sm"><%= r.vehicleType %></td>
+                  <td class="text-sm"><%= r.startLocation %> → <%= r.endLocation %></td>
+                  <td class="text-sm"><%= r.distance ? r.distance + ' km' : '—' %></td>
+                  <td><span class="badge badge-<%= r.status.toLowerCase() %>"><%= r.status %></span></td>
+                  <td>
+                    <div class="flex gap-2">
+                      <button class="btn btn-outline btn-sm"
+                        onclick="loadRoute(<%= r.id %>, '<%= r.startLocation %>', '<%= r.endLocation %>')">Load</button>
+                      <form method="POST" action="/routes/<%= r.id %>/delete"
+                        onsubmit="return confirm('Delete route #<%= r.id %>?')">
+                        <button type="submit" class="btn btn-danger btn-sm">Del</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } %>
+          </div>
+
+          <div class="card card-body">
+            <div class="font-semibold mb-2">Add Delivery Points</div>
+            <p class="text-xs text-muted mb-4">Click the canvas to add waypoints, then click Optimize.</p>
+            <div class="form-group">
+              <label>Point Name</label>
+              <input type="text" id="point-name" placeholder="e.g. Thamel Hub">
+            </div>
+            <button class="btn btn-outline btn-sm w-full" onclick="addPointMode()">📍 Click Canvas to Add Point</button>
+            <div id="route-info-panel" class="route-info-panel hidden">
+              <div class="font-semibold mb-1">Optimization Result</div>
+              <div id="route-result-text" class="text-sm"></div>
+            </div>
+            <div style="margin-top:1rem;" id="optimize-wrap" class="hidden">
+              <button class="btn btn-primary w-full" onclick="runOptimize()">⚡ Optimize Route</button>
+            </div>
+            <div style="margin-top:0.5rem;">
+              <button class="btn btn-outline btn-sm w-full" onclick="clearCanvas()">🗑 Clear Canvas</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas -->
+        <div id="route-canvas-wrap">
+          <canvas id="route-canvas"></canvas>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-muted);pointer-events:none;" id="canvas-hint">
+            <div style="font-size:2rem;">🗺️</div>
+            <div class="text-sm font-medium mt-2">Select a route and add delivery points</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Route Modal -->
+<div class="modal-overlay" id="create-route-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Route</span>
+      <button class="modal-close" onclick="closeModal('create-route-modal')">✕</button>
+    </div>
+    <form method="POST" action="/routes">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select name="vehicleType" required>
+            <option value="VAN">🚐 Van</option>
+            <option value="TRUCK">🚛 Truck</option>
+            <option value="MOTORCYCLE">🏍️ Motorcycle</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Start Location</label>
+          <input type="text" name="startLocation" placeholder="e.g. Kathmandu" required>
+        </div>
+        <div class="form-group">
+          <label>End Location</label>
+          <input type="text" name="endLocation" placeholder="e.g. Pokhara" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('create-route-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Route</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
